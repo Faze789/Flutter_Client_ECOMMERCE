@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "245238143714",
+    "project_id": "message-notifier-dca31",
+    "storage_bucket": "message-notifier-dca31.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:245238143714:android:5ae09d6e94b5d8055e9cbb",
+        "android_client_info": {
+          "package_name": "com.example.pak_wheels_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLGnumeYB-d5PbWVfIADR0rd7PHD5A7rk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
