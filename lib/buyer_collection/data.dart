@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +11,6 @@ import '../providers/buyer_provider.dart';
 
 class data extends StatefulWidget {
   data({super.key, required this.user_unique_id});
-
   String user_unique_id;
 
   @override
@@ -36,7 +33,20 @@ class _dataState extends State<data> {
 
   @override
   Widget build(BuildContext context) {
+    print('Triggered or not Triggered');
+
+    double percentage = 0.0;
+
+    bool percent_check = false;
+
     final screenWidth = MediaQuery.of(context).size.width;
+
+    int i = 0;
+
+    initState() {
+      super.initState();
+      Provider.of<buyer_provider>(context, listen: false).get_all_sellers_data();
+    }
 
     return Scaffold(
       backgroundColor: Colors.grey,
@@ -45,12 +55,11 @@ class _dataState extends State<data> {
         title: Text(
           widget.user_unique_id,
           style: GoogleFonts.lato(
-            textStyle: const TextStyle(
-              fontSize: 20.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
+              textStyle: const TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          )),
         ),
         actions: [
           IconButton(
@@ -91,168 +100,198 @@ class _dataState extends State<data> {
         ],
         centerTitle: true,
       ),
-      body: Consumer<buyer_provider>(
-        builder: (context, buyer_, child) {
-          final productNames = buyer_.product_name_sell_to_buyer;
-
-          if (productNames.isEmpty) {
-            // print(8338);
-            buyer_.get_all_sellers_data();
+      body: FutureBuilder(
+        future: Provider.of<buyer_provider>(context, listen: false).get_all_sellers_data(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          }
-
-          return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: screenWidth * 0.02,
-              crossAxisSpacing: screenWidth * 0.02,
-              childAspectRatio: screenWidth > 600 ? 1 : 0.8,
-            ),
-            padding: EdgeInsets.all(screenWidth * 0.02),
-            itemCount: productNames.length,
-            itemBuilder: (ctx, index) {
-              print(1234);
-              final randomColor = colorsList[Random().nextInt(colorsList.length)];
-
-              return InkWell(
-                onTap: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (ctx) => selected_item(
-                        seller_unique_id: buyer_.seller_id123[index],
-                        product_unique_id: buyer_.product_unique_id[index],
-                        user_unique_id: widget.user_unique_id,
-                        product_name: productNames[index],
-                        product_price: buyer_.product_price_sell_to_buyer[index],
-                        seller_name: buyer_.seller_name_sell_to_buyer[index],
-                        warranty: buyer_.product_warranty_sell_to_buyer[index],
-                        product_image: buyer_.product_iamge_link_sell_to_buyer[index],
-                      ),
-                    ),
-                    (route) => false,
-                  );
-                },
-                child: Card(
-                  color: randomColor,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            print('checking on uuu 1');
+            return Consumer<buyer_provider>(
+              builder: (context, buyerProvider, child) {
+                if (buyerProvider.product_name_sell_to_buyer.isEmpty) {
+                  return const Center(child: Text('No products available'));
+                }
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: screenWidth * 0.01,
+                    crossAxisSpacing: screenWidth * 0.01,
+                    childAspectRatio: screenWidth > 600 ? 1.5 : 0.6,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.network(
-                            buyer_.product_iamge_link_sell_to_buyer[index],
-                            width: double.infinity,
-                            height: MediaQuery.of(context).size.height * 0.2,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey[300],
-                                height: MediaQuery.of(context).size.height * 0.2,
-                                child: const Center(
-                                  child: Icon(Icons.broken_image, color: Colors.grey),
-                                ),
-                              );
-                            },
-                            fit: BoxFit.cover,
+                  padding: EdgeInsets.all(screenWidth * 0.02),
+                  itemCount: buyerProvider.product_name_sell_to_buyer.length,
+                  itemBuilder: (ctx, index) {
+                    Color randomColor;
+
+                    if (index >= colorsList.length) {
+                      randomColor = colorsList[i];
+                      i++;
+                      if (i >= colorsList.length) {
+                        i = 0;
+                      }
+                    } else {
+                      randomColor = colorsList[index];
+                    }
+
+                    print('checking on uuu 2');
+
+                    return InkWell(
+                      onTap: () {
+                        print('-------------------');
+                        print(buyerProvider.product_price_sell_to_buyer[index]);
+                        buyerProvider.changed_price(buyerProvider.product_price_sell_to_buyer[index]);
+                        print('-------------------');
+
+                        print(buyerProvider.product_price_sell_to_buyer[index]);
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (ctx) => selected_item(
+                              seller_unique_id: buyerProvider.seller_id123[index],
+                              product_unique_id: buyerProvider.product_unique_id[index],
+                              user_unique_id: widget.user_unique_id,
+                              product_name: buyerProvider.product_name_sell_to_buyer[index],
+                              product_price: buyerProvider.product_price_sell_to_buyer[index],
+                              seller_name: buyerProvider.seller_name_sell_to_buyer[index],
+                              warranty: buyerProvider.product_warranty_sell_to_buyer[index],
+                              product_image: buyerProvider.product_iamge_link_sell_to_buyer[index],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          (route) => false,
+                        );
+                      },
+                      child: Container(
+                        color: randomColor,
+                        width: 800,
+                        height: 1600,
+                        child: Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Column(
                             children: [
-                              Text(
-                                productNames[index].toUpperCase(),
-                                style: GoogleFonts.abhayaLibre(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  buyerProvider.product_iamge_link_sell_to_buyer[index],
+                                  width: double.infinity,
+                                  height: MediaQuery.of(context).size.height * 0.2,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[300],
+                                      height: MediaQuery.of(context).size.height * 0.2,
+                                      child: const Center(
+                                        child: Icon(Icons.broken_image, color: Colors.grey),
+                                      ),
+                                    );
+                                  },
+                                  fit: BoxFit.cover,
                                 ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                              Text(
-                                buyer_.seller_name_sell_to_buyer[index].toUpperCase(),
-                                style: GoogleFonts.abhayaLibre(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                              const SizedBox(height: 2),
+                              Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text(
+                                      buyerProvider.product_name_sell_to_buyer[index].toUpperCase(),
+                                      style: GoogleFonts.abhayaLibre(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      buyerProvider.seller_name_sell_to_buyer[index].toUpperCase(),
+                                      style: GoogleFonts.abhayaLibre(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.price_change_sharp),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    '\$${buyerProvider.product_price_sell_to_buyer[index].toString()}',
+                                    style: GoogleFonts.abhayaLibre(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(FontAwesomeIcons.shield),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${buyerProvider.product_warranty_sell_to_buyer[index]}',
+                                    style: GoogleFonts.abhayaLibre(
+                                      fontSize: 14,
+                                      color: Colors.black,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: [
+                                  IconButton(
+                                    onPressed: () {
+                                      buyerProvider.change_favorite(index);
+                                    },
+                                    icon: Icon(
+                                      buyerProvider.favorites[index] ? Icons.favorite : Icons.favorite_border,
+                                      color: buyerProvider.favorites[index] ? Colors.red : Colors.black,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      if (percent_check == false) {
+                                        percent_check = true;
+                                        percentage = double.parse(buyerProvider.product_price_sell_to_buyer[index].toString());
+                                        percentage = percentage * 0.75;
+                                      }
+
+                                      print(percentage);
+
+                                      buyerProvider.change_price(index, percentage);
+                                    },
+                                    icon: const Icon(Icons.discount),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.price_change_sharp),
-                            const SizedBox(width: 10),
-                            Text(
-                              '\$${buyer_.product_price_sell_to_buyer[index].toString()}',
-                              style: GoogleFonts.abhayaLibre(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(FontAwesomeIcons.shield),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${buyer_.product_warranty_sell_to_buyer[index]}',
-                              style: GoogleFonts.abhayaLibre(
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                buyer_.change_favorite(index);
-                              },
-                              icon: buyer_.favorites[index]
-                                  ? const Icon(Icons.favorite, color: Colors.red)
-                                  : const Icon(Icons.favorite_border, color: Colors.black),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                buyer_.display(buyer_.product_price_sell_to_buyer[index], index);
-                              },
-                              icon: const Icon(Icons.discount),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
         },
       ),
     );

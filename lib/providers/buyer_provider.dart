@@ -5,45 +5,123 @@ import 'package:http/http.dart' as http;
 import 'package:pak_wheels_application/providers/json_tokens_provider.dart';
 
 class buyer_provider extends ChangeNotifier {
-  List<String> product_unique_id = [];
+  int count = 1;
 
+  bool like = false;
+
+  void change_like() {
+    if (like == false || count > 1) {
+      like = true;
+    } else {
+      like = false;
+    }
+    notifyListeners();
+  }
+
+  double exact_price = 0;
+
+  double product_price_changed = 0;
+
+  void changed_price(String original_price) {
+    product_price_changed = double.parse(original_price);
+    exact_price = product_price_changed;
+
+    notifyListeners();
+  }
+
+  void increase_count() {
+    count++;
+    product_price_changed = product_price_changed + exact_price;
+
+    notifyListeners();
+  }
+
+  void decrease_count() {
+    if (count == 1) {
+      print('Do nothing');
+    } else {
+      count = count - 1;
+      product_price_changed = product_price_changed - exact_price;
+      notifyListeners();
+    }
+  }
+
+  void reset_count() {
+    // print(exact_price);
+    count = 1;
+    product_price_changed = exact_price;
+    notifyListeners();
+  }
+
+  // int c = 30;
+
+  // String add_data() {
+  //   c = c + 50;
+  //   print(c);
+  //   notifyListeners();
+  //   return c.toString();
+  // }
+
+  List<String> product_unique_id = [];
   List<String> product_iamge_link_sell_to_buyer = [];
   List<String> product_price_sell_to_buyer = [];
   List<String> product_warranty_sell_to_buyer = [];
   List<String> product_quality_sell_to_buyer = [];
   List<String> seller_name_sell_to_buyer = [];
   List<String> product_name_sell_to_buyer = [];
-
-  ///buyer manipulation started
-  ///
-  ///
+  List<String> seller_id123 = [];
   List<bool> favorites = List.filled(10000, false);
 
-  void change_favorite(int index) {
-    if (favorites[index] == true) {
-      favorites[index] = false;
+  Future<void> get_all_sellers_data() async {
+    product_iamge_link_sell_to_buyer.clear();
+    product_price_sell_to_buyer.clear();
+    product_warranty_sell_to_buyer.clear();
+    product_quality_sell_to_buyer.clear();
+    seller_name_sell_to_buyer.clear();
+    product_name_sell_to_buyer.clear();
+    product_unique_id.clear();
+    seller_id123.clear();
+
+    final get_sellers_data = 'https://ecommerce123-alpha.vercel.app/home/buyer/get_all_sellers_data';
+
+    final request_to_server = await http.get(Uri.parse(get_sellers_data));
+
+    if (request_to_server.statusCode == 200) {
+      print(request_to_server.body);
+      final List convert_to_json = json.decode(request_to_server.body);
+      for (var users in convert_to_json) {
+        seller_id123.add(users['seller_product_id']);
+        product_unique_id.add(users['_id']);
+        seller_name_sell_to_buyer.add(users['seller_name']);
+        product_name_sell_to_buyer.add(users['product_name']);
+
+        product_quality_sell_to_buyer.add(users['product_quality']);
+
+        product_warranty_sell_to_buyer.add(users['product_warranty']);
+        product_price_sell_to_buyer.add(users['product_price']);
+        product_iamge_link_sell_to_buyer.add(users['image_url']);
+      }
+      notifyListeners();
     } else {
-      favorites[index] = true;
+      print('nothing 4321');
     }
+  }
+
+  void change_favorite(int index) {
+    favorites[index] = !favorites[index];
     notifyListeners();
   }
 
-  void display(String price, int index) {
-    print('product_price_sell_to_buyer length: ${product_price_sell_to_buyer.length}');
-    if (index < product_price_sell_to_buyer.length) {
-      product_price_sell_to_buyer[index] = (int.parse(product_price_sell_to_buyer[index]) + 50).toString();
+  void change_price(int index, double percentage) {
+    if (index < product_price_sell_to_buyer.length &&
+        int.parse(product_price_sell_to_buyer[index]) > 50 &&
+        int.parse(product_price_sell_to_buyer[index]) >= percentage) {
+      product_price_sell_to_buyer[index] = (int.parse(product_price_sell_to_buyer[index]) - 50).toString();
       print(product_price_sell_to_buyer[index]);
       notifyListeners();
     } else {
-      print('Index out of range: $index');
+      print('index out of bound || price is less than 50 || Discount price Reached');
     }
-  }
-
-  void change_price(String product_price) {
-    print('-------------------');
-    print(product_price);
-    print('-------------------');
-    notifyListeners();
   }
 
   var buyer_unique_id;
@@ -140,44 +218,6 @@ class buyer_provider extends ChangeNotifier {
     } catch (error) {
       print('Error: $error');
       throw Exception('Error while fetching data: $error');
-    }
-  }
-
-  List<String> seller_id123 = [];
-
-  Future<void> get_all_sellers_data() async {
-    product_iamge_link_sell_to_buyer.clear();
-    product_price_sell_to_buyer.clear();
-    product_warranty_sell_to_buyer.clear();
-    product_quality_sell_to_buyer.clear();
-    seller_name_sell_to_buyer.clear();
-    product_name_sell_to_buyer.clear();
-    product_unique_id.clear();
-    seller_id123.clear();
-
-    final get_sellers_data = 'https://ecommerce123-alpha.vercel.app/home/buyer/get_all_sellers_data';
-
-    final request_to_server = await http.get(Uri.parse(get_sellers_data));
-
-    if (request_to_server.statusCode == 200) {
-      print(request_to_server.body);
-      final List convert_to_json = json.decode(request_to_server.body);
-      for (var users in convert_to_json) {
-        seller_id123.add(users['seller_product_id']);
-        product_unique_id.add(users['_id']);
-        seller_name_sell_to_buyer.add(users['seller_name']);
-        product_name_sell_to_buyer.add(users['product_name']);
-
-        product_quality_sell_to_buyer.add(users['product_quality']);
-
-        product_warranty_sell_to_buyer.add(users['product_warranty']);
-        product_price_sell_to_buyer.add(users['product_price']);
-        product_iamge_link_sell_to_buyer.add(users['image_url']);
-
-        notifyListeners();
-      }
-    } else {
-      print('nothing 4321');
     }
   }
 

@@ -44,7 +44,6 @@ dependencies:
   jwt_decoder: ^2.0.1
   font_awesome_flutter: ^10.8.0
   heroicons: ^0.10.0
-  flutter_stripe: ^11.3.0
   jwt_decode: ^0.3.1
 
 

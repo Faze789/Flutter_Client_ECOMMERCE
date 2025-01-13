@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pak_wheels_application/buyer_collection/data.dart';
 import 'package:pak_wheels_application/providers/buyer_provider.dart';
+import 'package:provider/provider.dart';
 
 class selected_item extends StatefulWidget {
   const selected_item({
@@ -30,6 +31,7 @@ class selected_item extends StatefulWidget {
 
 class _selected_itemState extends State<selected_item> {
   @override
+  @override
   Widget build(BuildContext context) {
     final buyer_ = buyer_provider();
 
@@ -54,7 +56,7 @@ class _selected_itemState extends State<selected_item> {
             children: [
               Center(
                 child: Container(
-                  height: 470,
+                  height: 800,
                   width: 300,
                   color: Colors.blueGrey,
                   child: Align(
@@ -75,13 +77,19 @@ class _selected_itemState extends State<selected_item> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                const Icon(FontAwesomeIcons.dollarSign),
-                                const SizedBox(
-                                  width: 3,
-                                ),
-                                Text(
-                                  widget.product_price,
-                                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                                Consumer<buyer_provider>(
+                                  builder: (context, provider, child) => Row(
+                                    children: [
+                                      const Icon(FontAwesomeIcons.dollarSign),
+                                      const SizedBox(
+                                        width: 3,
+                                      ),
+                                      Text(
+                                        provider.product_price_changed.toString(),
+                                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -112,6 +120,60 @@ class _selected_itemState extends State<selected_item> {
                               ],
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 3),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Consumer<buyer_provider>(builder: (ctx, provider1, child) {
+                              return Text(
+                                provider1.count.toString(),
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              );
+                            }),
+                            Consumer<buyer_provider>(builder: (ctx, provider1, child) {
+                              return IconButton(
+                                  onPressed: () {
+                                    provider1.increase_count();
+                                    provider1.change_like();
+                                  },
+                                  icon: const Icon(FontAwesomeIcons.plus, color: Colors.white, size: 20));
+                            }),
+                            Consumer<buyer_provider>(builder: (ctx, provider1, child) {
+                              return IconButton(
+                                  onPressed: () {
+                                    provider1.decrease_count();
+                                    provider1.change_like();
+                                  },
+                                  icon: const Icon(FontAwesomeIcons.minus, color: Colors.red, size: 20));
+                            }),
+                            Consumer<buyer_provider>(builder: (ctx, provider1, child) {
+                              return IconButton(
+                                  onPressed: () {
+                                    provider1.reset_count();
+                                    provider1.change_like();
+                                  },
+                                  icon: const Icon(Icons.restore, color: Colors.red, size: 20));
+                            }),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Consumer<buyer_provider>(
+                              builder: (context, provider, child) => IconButton(onPressed: () {
+                                provider.change_like();
+                              }, icon: Builder(builder: (context) {
+                                if (provider.like == true) {
+                                  return const Icon(Icons.favorite, color: Colors.red);
+                                } else {
+                                  return const Icon(Icons.favorite_border_outlined, color: Colors.grey);
+                                }
+                              })),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [],
                         ),
                         const SizedBox(height: 3),
                         Row(

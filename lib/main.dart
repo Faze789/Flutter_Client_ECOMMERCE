@@ -5,18 +5,6 @@ import 'package:pak_wheels_application/screens/home.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  //Remove this method to stop OneSignal Debugging
-// OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-
-// OneSignal.initialize("c24bfe22-a1ab-4a0d-971e-358318fccca2");
-
-// // The promptForPushNotificationsWithUserResponse function will show the iOS or Android push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
-// OneSignal.Notifications.requestPermission(true);
-
-// WidgetsFlutterBinding.ensureInitialized(); // Ensure widget binding is initialized
-//   await Firebase.initializeApp(); // Initialize Firebase
-  // runApp(MyApp());
-
   runApp(MyApp());
 }
 
@@ -39,6 +27,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const home(),
+        //  home: const HOME(),
         debugShowCheckedModeBanner: false,
       ),
     );
